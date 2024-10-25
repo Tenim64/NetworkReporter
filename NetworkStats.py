@@ -29,36 +29,35 @@ CREATE TABLE IF NOT EXISTS speed_stats (
 ''')
 conn.commit()
 
-def get_ping_statistics(host='8.8.8.8'):
+def get_ping_statistics():
     """Ping a host and extract ping latency and packet loss."""
     # print("Getting ping statistics...")
-
     try:
-        ping_output = subprocess.run(
-            ["ping", host],
+        # Use '-c 4' to send 4 pings and '-w' to set an overall timeout in seconds
+        result = subprocess.run(
+            ["ping", "-c", "4", "-w", "5", "8.8.8.8"],
             capture_output=True,
-            text=True
-        ).stdout
+            text=True,
+            check=True
+        )
         
-        avg_ping = None
-        packet_loss = None
-        ping_times = re.findall(r'time=(\d+)ms', (" ".join(ping_output.splitlines()[1:-5])))
+        # Process the output using regular expressions
+        output = result.stdout
+        times = re.findall(r"time=(\d+\.?\d*) ms", output)
+        packet_loss = re.search(r"(\d+)% packet loss", output)
 
-        if not ping_times:
-            return None, None
-        
-        # Convert all found times to integers and calculate the average
-        ping_times = [int(time) for time in ping_times]
-        avg_ping = sum(ping_times) / len(ping_times)
+        # Calculate average ping time if available
+        avg_ping_time = sum(map(float, times)) / len(times) if times else None
+        packet_loss_percentage = int(packet_loss.group(1)) if packet_loss else None
 
-        # Calculate packet loss percentage by counting failed requests
-        sent_count = len(ping_times)
-        received_count = len(ping_times)
-        packet_loss = ((sent_count - received_count) / sent_count) * 100
+        return avg_ping_time, packet_loss_percentage
 
-        return avg_ping, packet_loss
-    except Exception as e:
-        print(f"Error occurred during ping: {e}")
+    except subprocess.CalledProcessError as e:
+        print("Ping command failed:", e)
+        return None, None
+
+    except subprocess.TimeoutExpired:
+        print("Ping command timed out.")
         return None, None
 
 def store_ping_statistics():
