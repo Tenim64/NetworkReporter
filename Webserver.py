@@ -43,6 +43,12 @@ def earliest_timestamp():
 
     if earliest_ping is None and earliest_speed is None:
         return jsonify({"earliest_timestamp": None})
+    
+    if earliest_ping is None:
+        return jsonify({"earliest_timestamp": earliest_speed})
+    
+    if earliest_speed is None:
+        return jsonify({"earliest_timestamp": earliest_ping})
 
     # Return the earliest timestamp in ISO format
     earliest = min(earliest_ping, earliest_speed)
