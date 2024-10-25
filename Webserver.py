@@ -41,6 +41,9 @@ def earliest_timestamp():
 
     conn.close()
 
+    if earliest_ping is None and earliest_speed is None:
+        return jsonify({"earliest_timestamp": None})
+
     # Return the earliest timestamp in ISO format
     earliest = min(earliest_ping, earliest_speed)
     return jsonify({"earliest_timestamp": earliest})
@@ -56,4 +59,4 @@ def speed_data():
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

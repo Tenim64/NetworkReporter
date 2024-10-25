@@ -29,22 +29,6 @@ CREATE TABLE IF NOT EXISTS speed_stats (
 ''')
 conn.commit()
 
-def get_earliest_timestamp():
-    conn = sqlite3.connect('network_stats.db')
-    cursor = conn.cursor()
-    
-    # Query to get the minimum timestamp from all relevant tables
-    cursor.execute("SELECT MIN(timestamp) FROM ping_data")
-    earliest_ping = cursor.fetchone()[0]
-
-    cursor.execute("SELECT MIN(timestamp) FROM speed_data")
-    earliest_speed = cursor.fetchone()[0]
-
-    conn.close()
-
-    # Return the earliest timestamp
-    return min(earliest_ping, earliest_speed)
-
 def get_ping_statistics(host='8.8.8.8'):
     """Ping a host and extract ping latency and packet loss."""
     # print("Getting ping statistics...")
